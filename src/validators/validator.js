@@ -1,3 +1,4 @@
+const mongoose = require('mongoose')
 const isValidEmail = (Email) => {
   return /^([A-Za-z0-9._]{3,}@[A-Za-z]{3,}[.]{1}[A-Za-z.]{2,6})+$/.test(Email);
 };
@@ -7,5 +8,14 @@ const isValidPwd = (Password) => {
     Password
   );
 };
+const isValidRequestBody = function (requestBody) {
+  if (Object.keys(requestBody).length > 0) return true;
+  return false;
+};
 
-module.exports = { isValidEmail, isValidPwd };
+const isValidObjectId = function (objectId) {
+  return mongoose.Types.ObjectId.isValid(objectId);
+};
+
+
+module.exports = { isValidEmail, isValidPwd,isValidObjectId, isValidRequestBody };
