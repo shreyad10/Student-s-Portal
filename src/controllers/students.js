@@ -4,8 +4,9 @@ const {
   isValidObjectId,
   isValidRequestBody,
 } = require("../validators/validator");
-const { findOneAndUpdate, findOne } = require("../models/userModel");
 
+
+//-------------------------------- register student--------------------------------
 const student = async (req, res) => {
   try {
     let sData = req.body;
@@ -60,20 +61,20 @@ const student = async (req, res) => {
   }
 };
 
+// ------------------------------- view students ------------------------------------------
 const viewStudent = async (req, res) => {
     try {
       let data = req.query;
       let userId = req.params.userId;
-      let { name, subject } = data;
-  
-      if (!isValidRequestBody(data)) {
+
+      if (!isValidObjectId(userId)) {
         return res.send({
           status: false,
-          message: "Kindly send correct request",
+          message: "UserId is not correct or user does not exist",
         });
       }
   
-      //authentication
+      //authorization
       if (req.headers.userId != userId) {
         return res.send({
           status: false,
@@ -81,9 +82,6 @@ const viewStudent = async (req, res) => {
         });
       }
       data["userId"] = userId;
-  
-      if (subject) data.subject = cap(subject);
-      if (name) data.name = cap(name);
   
       let getStudent = await studentModel
         .find(data)
@@ -101,7 +99,8 @@ const viewStudent = async (req, res) => {
     }
   };
 
-const update = async function (req, res) {
+  //------------------------------ edit student's details-----------------------------
+const updateStudent = async function (req, res) {
   try {
     let userId = req.params.userId;
     let studentId = req.params.studentId;
@@ -132,13 +131,13 @@ const update = async function (req, res) {
     let { name, marks, subject } = data;
 
     let check = await studentModel.findById(studentId);
-    if (!check) return res.send("No student found with this student ID");
+    if (!check) return res.send({status:false, message :"No student found with this student ID"});
     if (name == check.name)
-      return res.send("This name already exists.No need to update");
+      return res.send({status:false,message:"This name already exists.No need to update"});
     updateData["name"] = name;
 
     if (marks == check.marks)
-      return res.send("Marks are same.No need to update");
+      return res.send({status:false,message:"Marks are same.No need to update"});
     updateData["marks"] = marks;
 
     let update = await studentModel.findOneAndUpdate(
@@ -146,12 +145,13 @@ const update = async function (req, res) {
       updateData,
       { new: true, upsert: true }
     );
-    res.status(200).send({ msg: true, data: update });
+    res.status(200).send({ status: true,message: "Data updated", data: update });
   } catch (error) {
     res.status(500).send(error.message);
   }
 };
 
+//--------------------------------- delete student -----------------------------
 const deleteStudent = async function (req, res) {
   try {
     let userId = req.params.userId;
@@ -173,7 +173,6 @@ const deleteStudent = async function (req, res) {
 
     let student = await studentModel.findOne({
       _id: studentId,
-      isDeleted: true,
     });
     if (!student) {
       return res.send({
@@ -198,4 +197,4 @@ const deleteStudent = async function (req, res) {
     return res.status(500).send({ status: false, message: error.message });
   }
 };
-module.exports = { student,viewStudent, update, deleteStudent };
+module.exports = { student,viewStudent, updateStudent, deleteStudent };

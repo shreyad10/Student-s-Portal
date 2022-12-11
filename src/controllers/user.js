@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
 const userModel = require("../models/userModel");
+const studentModel = require("../models/studentModel");
 const jwt = require("jsonwebtoken");
 const { isValidEmail, isValidPwd } = require("../validators/validator");
 
@@ -55,12 +55,10 @@ const login = async function (req, res) {
 
     let user = await userModel.findOne({ email: email, password: password });
     if (!user) {
-      return res
-        .status(200)
-        .send({
-          status: true,
-          message: "No such user exist, please register!",
-        });
+      return res.status(200).send({
+        status: true,
+        message: "No such user exist, please register!",
+      });
     }
     let token = jwt.sign(
       {
@@ -70,7 +68,15 @@ const login = async function (req, res) {
       "Veryverysecretkey"
     );
     let studentList = await studentModel.find({ userId: user._id }); //new code
-
+    if (studentList.length == 0) {
+      return res
+        .status(200)
+        .send({
+          status: true,
+          token: token,
+          studentList: "No students for logged In user!",
+        });
+    }
     return res
       .status(200)
       .send({ status: true, token: token, studentList: studentList }); //new
